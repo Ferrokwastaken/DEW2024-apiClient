@@ -31,7 +31,7 @@ app.get('/api/client/:id', (req, res) => {
   if (filterClient.length) {
     res.json(filterClient[0]);
   } else {
-    res.send('El cliente con id = ' + id + ' no encontrado');
+    res.send(404).send('El cliente con id = ' + id + ' no encontrado');
   }
 });
 
@@ -48,6 +48,32 @@ app.post('/api/client', (req, res) => {
     res.status(201).json(newClient)
   } else {
     res.status(422).send('Faltan los campos: ' + error.join(', '))
+  }
+})
+
+app.delete('/api/client/:id', (req, res) => {
+  const id = req.params.id
+  const index = CLIENTS.findIndex(client => client.id == id)
+  if (index >= 0) {
+    CLIENTS.splice(index, 1)
+    res.status(200).send('Borrado')
+  } else {
+    res.status(404).send('No encontrado')
+  }
+})
+
+app.put('/api/client/:id', (req, res) => {
+  const id = req.params.id
+  let filterClient = CLIENTS.filter(c => c.id == id);
+  if (filterClient.length) {
+    const client = filterClient[0]
+    const newClient = req.body
+    client.nombre = newClient.nombre
+    client.apellidos = newClient.apellidos
+    client.cuenta.email = newClient.cuenta.email
+    res.send('Modificado')
+  } else {
+    res.send(404).send('El cliente con id = ' + id + ' no encontrado');
   }
 })
 

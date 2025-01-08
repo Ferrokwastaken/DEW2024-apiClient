@@ -5,6 +5,13 @@ const inputNombre = document.getElementById('nombre')
 const inputApellidos = document.getElementById('apellidos')
 const inputEmail = document.getElementById('email')
 const buttonCrear = document.getElementById('crear')
+const editPanel = document.getElementById('edit-panel')
+const buttonCancel = document.getElementById('cancel')
+const editNombre = document.getElementById('edit-nombre')
+const editApellidos = document.getElementById('edit-apellidos')
+const editEmail = document.getElementById('edit-email')
+const editId = document.getElementById('edit-id')
+const buttonSave = document.getElementById('save')
 
 fetch('/api/client')
   .then(res => res.json())
@@ -38,7 +45,14 @@ function showClient(client) {
   divDetails.innerHTML = `
       <h1>${client.nombre} ${client.apellidos}</h1>
     <h2>${client.cuenta.email}</h2>
+    <p>${client.direccion.localidad}</p>
+    <button onclick="deleteClient(${client.id})">Eliminar cliente</button>
+    <button onclick="modifyClient()">Modificar cliente</button>
   `
+  editNombre.value = client.nombre
+  editApellidos.value = client.apellidos
+  editEmail.value = client.cuenta.email
+  editId = client.id
 }
 
 buttonCrear.addEventListener('click', () => {
@@ -88,4 +102,31 @@ buttonCrear.addEventListener('click', () => {
       .then(error => console.log('Error en los datos: ', error))
     }
   })
+})
+
+function deleteClient (id) {
+  console.log('Eliminando el cliente con el ID: ' + id)
+  fetch('/api/client/' + id, {method: 'DELETE'})
+  .then(res => {
+    if (res.status == 200) {
+      console.log('El cliente ha sido eliminado')
+      divDetails.innerHTML = ''
+      const trClient = document.querySelector('[data-id = "' + id + '"]')
+      console.log(trClient)
+      trClient.remove()
+    } else {
+      console.log('Cliente no encontrado')
+    }
+  })
+}
+
+function modifyClient () {
+  editPanel.hidden = false
+}
+
+buttonCancel.addEventListener('click', () => editPanel.hidden = true)
+
+buttonSave.addEventListener('click', () => {
+  const id = editId.value
+  fetch('/api/client/' + id)
 })
