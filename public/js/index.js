@@ -12,6 +12,7 @@ const editApellidos = document.getElementById('edit-apellidos')
 const editEmail = document.getElementById('edit-email')
 const editId = document.getElementById('edit-id')
 const buttonSave = document.getElementById('save')
+let clientEditing
 
 fetch('/api/client')
   .then(res => res.json())
@@ -42,6 +43,7 @@ tbody.addEventListener('click', (e) => {
 
 function showClient(client) {
   console.log(client);
+  clientEditing = client
   divDetails.innerHTML = `
       <h1>${client.nombre} ${client.apellidos}</h1>
     <h2>${client.cuenta.email}</h2>
@@ -52,7 +54,8 @@ function showClient(client) {
   editNombre.value = client.nombre
   editApellidos.value = client.apellidos
   editEmail.value = client.cuenta.email
-  editId = client.id
+  editId.value = client.id
+  editPanel.hidden = true
 }
 
 buttonCrear.addEventListener('click', () => {
@@ -114,6 +117,8 @@ function deleteClient (id) {
       const trClient = document.querySelector('[data-id = "' + id + '"]')
       console.log(trClient)
       trClient.remove()
+      editPanel.hidden = true
+      clientEditing = null
     } else {
       console.log('Cliente no encontrado')
     }
@@ -124,9 +129,37 @@ function modifyClient () {
   editPanel.hidden = false
 }
 
-buttonCancel.addEventListener('click', () => editPanel.hidden = true)
+buttonCancel.addEventListener('click', () => {
+  editPanel.hidden = true
+  editNombre.value = clientEditing.nombre
+  editApellidos.value = clientEditing.apellidos
+  editEmail.value = clientEditing.cuenta.email
+})
 
 buttonSave.addEventListener('click', () => {
   const id = editId.value
-  fetch('/api/client/' + id)
+  let client = clientEditing
+  client.nombre = editNombre.value
+  client.apellidos = editApellidos.value
+  client.cuenta.email = editEmail.value
+  let options = {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(client)
+  }
+  fetch('/api/client/' + id, options)
+  .then(res => {
+    if (res.status == 200) {
+      console.log('Se ha modificado con éxito')
+      const trEdit = document.querySelector('[data-id="' + client.id + '"]')
+      console.log(trEdit)
+      trEdit.children[0].textContent = client.nombre
+      trEdit.children[1].textContent = client.apellidos
+      trEdit.children[2].textContent = client.cuenta.email
+    } else {
+      console.log('Error al modificar los datos')
+    }
+  })
 })
